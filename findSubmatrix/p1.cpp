@@ -17,7 +17,7 @@
 using namespace std;
 
 void displayMatrix(int** matrix, int matrixWidth);
-
+int compute_sum(int** matrix, int num_elements);
 
 int main(int argc, char *argv[]) {
    string line;
@@ -53,6 +53,15 @@ int main(int argc, char *argv[]) {
             matrix[row][column] = num;
          }
       }
+      int **sub_matrix = (int **)malloc(sizeof(int)*2);
+      assert(sub_rand_nums != NULL);
+
+
+      for (int row = 0; row < matrixWidth; row+=2){
+         for(int column = 0; column < matrixWidth; column+=2){
+            MPI_Send(row, 1, MPI_INT, dest, source, MPI_COMM_WORLD);
+         }
+      }
 
       // display matrix
       displayMatrix(matrix,matrixWidth);
@@ -60,10 +69,22 @@ int main(int argc, char *argv[]) {
 
    printf("Process %d out of %d\n", rank, size);
    /* Need this to shutdown MPI */
+
+   else{
+      MPI_Recv(&number, 1, MPI_INT, 0, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+   }   
    MPI_Finalize();
 }
 
-
+int compute_sum(int** matrix, int num_elements){
+   int sum = 0;
+   for(int row = 0; row < num_elements; row++){
+      for(int column = 0; column < num_elements; column++){
+         sum += matrix[row][column];
+      }
+   }
+   return sum;
+}
 void displayMatrix(int** matrix, int matrixWidth){
       for (int row =0; row < matrixWidth; row++){
          for(int column = 0; column < matrixWidth; column++){
