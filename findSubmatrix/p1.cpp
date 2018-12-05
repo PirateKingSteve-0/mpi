@@ -53,18 +53,21 @@ int main(int argc, char *argv[]) {
             matrix[row][column] = num;
          }
       }
+      // TODO: figure out how to seperate the array and send it to the processes
       int **sub_matrix = (int **)malloc(sizeof(int)*2);
       assert(sub_rand_nums != NULL);
 
 
       for (int row = 0; row < matrixWidth; row+=2){
          for(int column = 0; column < matrixWidth; column+=2){
-            MPI_Send(row, 1, MPI_INT, dest, source, MPI_COMM_WORLD);
+           
          }
       }
 
       // display matrix
       displayMatrix(matrix,matrixWidth);
+
+
    }
 
    printf("Process %d out of %d\n", rank, size);

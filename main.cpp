@@ -6,23 +6,31 @@
 #include <assert.h>
 using namespace std;
 // Creates an array of random numbers. Each number has a value from 0 - 1
-int *create_rand_nums(int num_elements) {
-  int *rand_nums = new int[num_elements];
+int **create_rand_nums(int num_elements) {
+  int **rand_nums = new int*[num_elements];
   for(int index = 0; index < num_elements; index++){
-    rand_nums[index] = index;
+    rand_nums[index] = new int[num_elements];
+    for(int inner = 0; index << num_elements; inner++){
+      rand_nums[index][inner] = index;
+      cout << rand_nums[index][inner] << " ";
+    }
+    cout << endl;
   }
   return rand_nums;
 }
 
 // Computes the average of an array of numbers
-int compute_avg(int *array, int num_elements) {
+int compute_avg(int **array, int num_elements) {
   int sum = 0;
   int i;
   cout << "num_elements: " << num_elements << endl;
   cout << "numbers in array: ";
   for (i = 0; i < num_elements; i++) {
-    cout << array[i] << " ";
-    sum += array[i];
+    for(int j = 0; j < num_elements; j++){
+      cout << array[i][j] << " ";
+      sum += array[i][j];
+    }
+   
   }
   cout<< endl; 
   cout << "sum: " << sum << endl;
@@ -43,21 +51,23 @@ int main(int argc, char** argv) {
   MPI_Init(NULL, NULL);
 
   int world_rank;
+
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
   int world_size;
   MPI_Comm_size(MPI_COMM_WORLD, &world_size);
-
+  
   // Create a random array of elements on the root process. Its total
   // size will be the number of elements per process times the number
   // of processes
-  int *rand_nums = NULL;
+  int **rand_nums = NULL;
+  cout << endl << "process: " << world_rank << endl;
   if (world_rank == 0) {
     rand_nums = create_rand_nums(num_elements_per_proc * world_size);
   }
-  cout << endl << "process: " << world_rank << endl;
+ 
   // For each process, create a buffer that will hold a subset of the entire
   // array
-  int *sub_rand_nums = (int *)malloc(sizeof(int) * num_elements_per_proc);
+  int **sub_rand_nums = (int **)malloc(sizeof(int) * num_elements_per_proc);
   assert(sub_rand_nums != NULL);
   
   // Scatter the random numbers from the root process to all processes in
@@ -68,9 +78,9 @@ int main(int argc, char** argv) {
   int sub_avg = compute_avg(sub_rand_nums, num_elements_per_proc);
 
   // Gather all partial averages down to the root process
-  int *sub_avgs = NULL;
+  int **sub_avgs = NULL;
   if (world_rank == 0) {
-    sub_avgs = (int *)malloc(sizeof(int) * world_size);
+    sub_avgs = (int **)malloc(sizeof(int) * world_size);
     assert(sub_avgs != NULL);
   }
   MPI_Gather(&sub_avg, 1, MPI_INT, sub_avgs, 1, MPI_INT, 0, MPI_COMM_WORLD);
@@ -81,8 +91,8 @@ int main(int argc, char** argv) {
   // produce the correct answer.
   if (world_rank == 0) {
     int sum = 0;
-    if( sum < compute_avg(sub_avgs, world_size)){
-      sum = compute_avg(sub_avgs, world_size);
+    if( sum < sub_avg)){
+      sum = sub_avg
     }
 
     printf("max sum of all elements is %d\n", sum);
