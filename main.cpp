@@ -19,6 +19,7 @@ int **create_rand_nums(int num_elements) {
   return rand_nums;
 }
 
+
 // Computes the average of an array of numbers
 int compute_avg(int **array, int num_elements) {
   int sum = 0;
