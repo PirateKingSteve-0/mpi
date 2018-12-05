@@ -4,47 +4,63 @@
 #include <mpi.h>
 #include <iostream>
 #include <assert.h>
+#include <fstream>
 using namespace std;
 // Creates an array of random numbers. Each number has a value from 0 - 1
-int **create_rand_nums(int num_elements) {
-  int** rand_nums;
-  rand_nums = new int*[num_elements];
-  for(int row = 0; row < num_elements; row++){
-    rand_nums[row] = new int[num_elements];
-    for(int col = 0; col < num_elements; col++){
-      rand_nums[row][col] = col;
-    }
+int **create_matrix(int matrixWidth,ifstream &inputFile) {
+  int **matrix;
+  int  num; 
+  //inputs to matrix
+  matrix = new int*[matrixWidth];
+  for (int row =0; row < matrixWidth; row++){
+      matrix[row] = new int[matrixWidth];
+      for(int column = 0; column < matrixWidth; column++){
+        inputFile >> num;
+        matrix[row][column] = num;
+      }
   }
-
-  for (int row =0; row < num_elements; row++){
-         for(int column = 0; column < num_elements; column++){
-            cout << rand_nums[row][column] << " ";
-         }
-         cout << endl;
-  }
-  return rand_nums;
+  return matrix;
 }
 
+void displayMatrix(int **matrix, int matrixWidth){
+  for(int row = 0; row < matrixWidth; row++){
+    for(int col = 0; col < matrixWidth; col++){
+      cout << matrix[row][col] << " ";
+    }
+    cout << endl;
+  }
+} 
 
-// // Computes the average of an array of numbers
-// int compute_avg(int** array, int num_elements) {
-//   int sum = 0;
-//   int i;
-//   cout << "num_elements: " << num_elements << endl;
-//   cout << "numbers in array: ";
-//   for (i = 0; i < num_elements; i++) {
-//     for(int j = 0; j < num_elements; j++){
-//       sum += array[i][j];
-//     }
-   
-//   }
-//   cout<< endl; 
-//   cout << "sum: " << sum << endl;
-//   return sum ;
-// }
+void displaySubMatrix(int *subMatrix, int matrixWidth){
+  for(int number = 0; number < matrixWidth; number++){
+      cout << subMatrix[number] << " ";
+      if(number%matrixWidth == 0){
+        cout << endl;
+      }
+  }
+}
+
+// Computes the average of an array of numbers
+int computeSum(int* array, int num_elements) {
+  int sum = 0;
+  cout << "num_elements: " << num_elements << endl;
+  cout << "numbers in array: ";
+  for (int index = 0; index < num_elements; index++) {
+    sum += array[index];
+  }
+  cout<< endl; 
+  cout << "sum: " << sum << endl;
+  return sum ;
+}
 
 int main(int argc, char** argv) {
-  if (argc != 2) {
+
+  ifstream inputFile;
+  int matrixWidth;
+  string line;
+
+
+  if (argc != 2){
     cout << "error" << endl;
     fprintf(stderr, "Usage: avg num_elements_per_proc\n");
     exit(1);
@@ -65,10 +81,21 @@ int main(int argc, char** argv) {
   // Create a random array of elements on the root process. Its total
   // size will be the number of elements per process times the number
   // of processes
-  int **rand_nums = NULL;
+  int **matrix = NULL;
   cout << endl << "process: " << world_rank << endl;
   if (world_rank == 0) {
-    rand_nums = create_rand_nums(num_elements_per_proc);
+    inputFile.open("./data.txt");
+        
+    //gets the size of the matrix
+    getline(inputFile, line);
+    sscanf(line.c_str(), "%d", &matrixWidth);
+    cout << "size of the array: " << matrixWidth << endl;
+    matrix = create_matrix(matrixWidth, inputFile);
+    displayMatrix(matrix, matrixWidth);
+   
+  }
+  else{ 
+    
   }
  
   // // For each process, create a buffer that will hold a subset of the entire

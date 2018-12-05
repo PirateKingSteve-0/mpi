@@ -9,6 +9,7 @@
         "string_view": "cpp",
         "utility": "cpp",
         "stdexcept": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "iosfwd": "cpp"
     }
 }
