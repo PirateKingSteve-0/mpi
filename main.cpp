@@ -7,12 +7,13 @@
 using namespace std;
 // Creates an array of random numbers. Each number has a value from 0 - 1
 int **create_rand_nums(int num_elements) {
-  int **rand_nums = new int*[num_elements];
-  for(int index = 0; index < num_elements; index++){
-    rand_nums[index] = new int[num_elements];
-    for(int inner = 0; index << num_elements; inner++){
-      rand_nums[index][inner] = index;
-      cout << rand_nums[index][inner] << " ";
+  int**rand_nums;
+  rand_nums = new int*[num_elements];
+  for(int row = 0; row < num_elements; row++){
+    rand_nums[row] = new int[num_elements];
+    for(int col = 0; col << num_elements; col++){
+      rand_nums[row][col] = col;
+      cout << rand_nums[row][col] << " ";
     }
     cout << endl;
   }
@@ -21,7 +22,7 @@ int **create_rand_nums(int num_elements) {
 
 
 // Computes the average of an array of numbers
-int compute_avg(int **array, int num_elements) {
+int compute_avg(int** array, int num_elements) {
   int sum = 0;
   int i;
   cout << "num_elements: " << num_elements << endl;
@@ -92,8 +93,8 @@ int main(int argc, char** argv) {
   // produce the correct answer.
   if (world_rank == 0) {
     int sum = 0;
-    if( sum < sub_avg)){
-      sum = sub_avg
+    if( sum < sub_avg){
+      sum = sub_avg;
     }
 
     printf("max sum of all elements is %d\n", sum);
