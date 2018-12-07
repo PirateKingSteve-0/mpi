@@ -29,17 +29,17 @@ void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
   }
 } 
 
-// void displaySubMatrix(int *subMatrix, int matrixWidth){
-//   int matrixSize= matrixWidth+matrixWidth;
-//   cout << endl << "Submatrix: " << endl;
-//   for(int number = 0; number < matrixSize; number++){
-//     if(number+number == matrixSize){
-//         cout<<endl;
-//     }
-//     cout << subMatrix[number] << " ";
-//   }
-//   cout << endl;
-// }
+void displaySubMatrix(int subMatrix[], int matrixWidth){
+  int matrixSize= matrixWidth+matrixWidth;
+  cout << endl << "Submatrix: " << endl;
+  for(int number = 0; number < matrixSize; number++){
+    if(number+number == matrixSize){
+        cout<<endl;
+    }
+    cout << subMatrix[number] << " ";
+  }
+  cout << endl;
+}
 
 // // Computes the average of an array of numbers
 // int computeSum(int* array, int num_elements) {
@@ -54,23 +54,26 @@ void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
 //   return sum ;
 // }
 
-// void getSubMatrix(int **matrix, int startRow,int startCol ,int subMatrixSize){
-//   vector<int> subMatrix(subMatrrixSize);
-//   int  index;
-//   index = 0;
-//   cout << "startRow: " << startRow << " startCol: "<< startCol <<endl;
-//   for (int row = startRow; row < subMatrixSize; row++){
-//     cout<< "numbers being inserted: ";
-//     for(int col = startCol; col < subMatrixSize; col++){
-//       cout << matrix[row][col] << ' ';
-//       subMatrix[index] = matrix[row][col];
-//       index++;
-//     }
-//     cout << endl;
-//   }
+void getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCol ,int subMatrixSize){
+  int index;
+  int subMatrix[subMatrixSize+subMatrixSize];
+  int endCol = startCol+subMatrixSize;
+  int endRow = startRow+subMatrixSize;
+  
+  index = 0;
+  cout << "startRow: " << startRow << " startCol: "<< startCol <<endl;
 
-//   displaySubMatrix(subMatrix, subMatrixSize);
-// }
+  for (int row = startRow; row < endRow; row++){
+    cout<< "numbers being inserted: ";
+    for(int col = startCol; col < endCol; col++){
+      cout << matrix[row][col] << ' ';
+      subMatrix[index] = matrix[row][col];
+      index++;
+    }
+    cout << endl;
+  }
+  displaySubMatrix(subMatrix, subMatrixSize);
+ }
 
 int main(int argc, char** argv) {
   ifstream inputFile;
@@ -104,14 +107,13 @@ int main(int argc, char** argv) {
 
     cout << endl;
     cout << "Sub Matrix list: "<< endl; 
-    // for(int row = 0; row < matrixWidth; row += sizeOfSubMatrix){
-    //   for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
-    //     getSubMatrix(matrix,row,col,sizeOfSubMatrix);
-    //     cout << endl << endl;
-    //   }
-    //   displayMatrix(matrix, matrixWidth);
-    //   cout << endl;
-    // }
+    for(int row = 0; row < matrixWidth; row += sizeOfSubMatrix){
+      for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
+        getSubMatrix(matrix,row,col,sizeOfSubMatrix);
+        cout << endl << endl;
+      }
+      cout << endl;
+    }
   }
   else{ 
     
