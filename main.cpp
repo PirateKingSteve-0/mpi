@@ -21,15 +21,36 @@ void create_matrix(vector<vector<int> > &matrix,int matrixWidth,ifstream &inputF
   }
 }
 
+/*
+  displayMatrix
+    matrix: multi dimensional matrix passed in to be printed or displayed
+    matrixWidth: pass matrix width
+
+    return: void
+
+    Function displays the matrix of the problem of size matrixWidth.
+*/
 void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
   for(int row = 0; row < matrixWidth; row++){
     for(int col = 0; col < matrixWidth; col++){
-      cout << matrix[row][col] << " ";
+      cout << matrix[row][col] << " "; // displays space between elements
     }
     cout << endl;
   }
 } 
 
+
+/*
+  displaySubMatrix
+    subMatrix: matrix that is the solution to the problem. Represents
+               a 2x2 matrix that with all its elements holds the highest
+               sum of numbers.
+    matrixWidth: pass matrix width
+
+    return: void
+
+    Funciton displays the submatrix as the solution to the problem. 
+*/
 void displaySubMatrix(vector<int> subMatrix, int matrixWidth){
   int matrixSize= matrixWidth+matrixWidth;
   cout << "Submatrix: " << endl;
@@ -54,6 +75,14 @@ int computeSum(int array[], int num_elements) {
   return sum ;
 }
 
+
+/*
+  getSubMatrix
+    matrix: multidimensional matrix the problem is working on
+    startRow: the row where the submatrix is received.
+    startCol: the column where the submatrix is received.
+    subMatrixSize: the size of the submatrix  
+*/
 vector <int>getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCol ,int subMatrixSize){
   vector <int> subMatrix;
   int endCol = startCol+subMatrixSize;
