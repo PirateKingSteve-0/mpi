@@ -101,7 +101,7 @@ vector <int>getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCo
 
 
 int main(int argc, char** argv) {
-  bool readyToSend;
+  bool finished = false;
   ifstream inputFile;
   int matrixWidth;
   int world_rank;
@@ -143,14 +143,22 @@ int main(int argc, char** argv) {
           currentDestProcess = 1;
         }
         MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
+
       }
       cout << endl;
     }
+    finished = true;
+    
   }
   else{ 
     subMatrix.resize(4);
-    MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-    displaySubMatrix(subMatrix,sizeOfSubMatrix );
+    while(!finished){
+      MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+    
+      displaySubMatrix(subMatrix,sizeOfSubMatrix);
+      cout << endl;
+      cout << "hello" << endl;
+    }
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
