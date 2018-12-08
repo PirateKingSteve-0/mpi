@@ -110,17 +110,18 @@ int main(int argc, char** argv) {
       for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
         displaySubMatrix(subMatrix, sizeOfSubMatrix);
-        // if(currentDestProcess == world_size){
-        //   currentDestProcess = 1;
-        // }
-        // MPI_Send( subMatrix, sizeOfSubMatrix, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
+        if(currentDestProcess == world_size){
+          currentDestProcess = 1;
+        }
+        MPI_Send(&subMatrix, (sizeOfSubMatrix+sizeOfSubMatrix), MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
       }
       cout << endl;
     }
   }
   else{ 
-    // MPI_Recv(&subMatrix, sizeOfSubMatrix, MPI_INT, 0, 0, MPI_COMM_WORLD,0);
-    //displaySubMatrix(subMatrix,sizeOfSubMatrix );
+
+    MPI_Recv(&subMatrix, sizeOfSubMatrix, MPI_INT, 0, 0, MPI_COMM_WORLD,0);
+    displaySubMatrix(subMatrix,sizeOfSubMatrix );
   }
 
   MPI_Barrier(MPI_COMM_WORLD);
