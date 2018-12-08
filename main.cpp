@@ -7,16 +7,23 @@
 #include <fstream>
 using namespace std;
 
-// Creates an array of random numbers. Each number has a value from 0 - 1
+/*
+  create_matrix
+    matrix: multidimensional matrix the problem is working on
+    matrixWidth: the width of the matrix
+    inputFile: file that contains the matrix values to read in
+
+    return: void
+*/
 void create_matrix(vector<vector<int> > &matrix,int matrixWidth,ifstream &inputFile) {
   int num;
 
   for (int row =0; row < matrixWidth; row++){
       vector<int> singleRow;
-      matrix.push_back(singleRow);
-      for(int column = 0; column < matrixWidth; column++){
+      matrix.push_back(singleRow);  // creates multidimensional matrix, push another vector into the matrix for each row
+      for(int column = 0; column < matrixWidth; column++){ // for each column read from the input file a number
         inputFile >> num;
-        matrix[row].push_back(num);
+        matrix[row].push_back(num);  // push numbers onto the row vector 
       }
   }
 }
@@ -55,10 +62,11 @@ void displaySubMatrix(vector<int> subMatrix, int matrixWidth){
   int matrixSize= matrixWidth+matrixWidth;
   cout << "Submatrix: " << endl;
   for(int number = 0; number < matrixSize; number++){
+    // if the matrixSize is equal to the number for loop counter number+number
     if(number+number == matrixSize){
         cout<<endl;
     }
-    cout << subMatrix[number] << " ";
+    cout << subMatrix[number] << " "; // display space  between elements
   }
 }
 
@@ -117,15 +125,15 @@ int main(int argc, char** argv) {
   }
 
   int sizeOfSubMatrix = atoi(argv[1]);
-  MPI_Init(NULL, NULL);
-  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
-  MPI_Comm_size(MPI_COMM_WORLD, &world_size);
+  MPI_Init(NULL, NULL); // initiates the communicator
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); // reports the rank, identifying the calling process
+  MPI_Comm_size(MPI_COMM_WORLD, &world_size); // reports the number of processes
   
   // Create a random array of elements on the root process. Its total
   // size will be the number of elements per process times the number
   // of processes
   vector<vector <int> > matrix;
-  if (world_rank == 0) {
+  if (world_rank == 0) { // if the root process
     inputFile.open("./data.txt");      
     //gets the size of the matrix
     getline(inputFile, line);
@@ -142,15 +150,14 @@ int main(int argc, char** argv) {
         if(currentDestProcess == world_size){
           currentDestProcess = 1;
         }
-        MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
+        MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD); // send the submatrix to the other processes
 
       }
       cout << endl;
-    }
+    } // end of for loop
     finished = true;
     
-  }
-  else{ 
+  }else{ 
     subMatrix.resize(4);
     while(!finished){
       MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
@@ -161,6 +168,6 @@ int main(int argc, char** argv) {
     }
   }
 
-  MPI_Barrier(MPI_COMM_WORLD);
-  MPI_Finalize();
+  MPI_Barrier(MPI_COMM_WORLD); 
+  MPI_Finalize(); //stop participating in any communicator
 }
