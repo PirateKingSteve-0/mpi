@@ -109,18 +109,18 @@ int main(int argc, char** argv) {
     for(int row = 0; row < matrixWidth; row += sizeOfSubMatrix){
       for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
-        displaySubMatrix(subMatrix, sizeOfSubMatrix);
+        //displaySubMatrix(subMatrix, sizeOfSubMatrix);
         if(currentDestProcess == world_size){
           currentDestProcess = 1;
         }
-        MPI_Send(&subMatrix, (sizeOfSubMatrix+sizeOfSubMatrix), MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
+        MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD);
       }
       cout << endl;
     }
   }
   else{ 
-
-    MPI_Recv(&subMatrix, sizeOfSubMatrix, MPI_INT, 0, 0, MPI_COMM_WORLD,0);
+    subMatrix.resize(4);
+    MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
     displaySubMatrix(subMatrix,sizeOfSubMatrix );
   }
 
