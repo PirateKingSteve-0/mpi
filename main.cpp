@@ -114,7 +114,7 @@ int main(int argc, char** argv) {
   int matrixWidth;
   int world_rank;
   int world_size;
-  int currentDestProcess = 1;
+  int currentDestProcess = 0;
   vector<int> subMatrix;
   string line;
 
@@ -147,24 +147,29 @@ int main(int argc, char** argv) {
       for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
         //displaySubMatrix(subMatrix, sizeOfSubMatrix);
+        ++currentDestProcess;
         if(currentDestProcess == world_size){
           currentDestProcess = 1;
         }
-        MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess++,0, MPI_COMM_WORLD); // send the submatrix to the other processes
-
+        MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes
+        MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
       }
       cout << endl;
     } // end of for loop
     finished = true;
+    for(int process = 1; process < world_size; process++){
+      MPI_Send(&finished, 1, MPI_C_BOOL,process, 1, MPI_COMM_WORLD);
+    }
     
   }else{ 
     subMatrix.resize(4);
     while(!finished){
-      MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-    
+      MPI_Recv(&finished, 1, MPI_C_BOOL, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      if (!finished){
+        MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+      }
       displaySubMatrix(subMatrix,sizeOfSubMatrix);
       cout << endl;
-      cout << "hello" << endl;
     }
   }
 
