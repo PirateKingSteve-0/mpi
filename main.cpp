@@ -114,11 +114,9 @@ int main(int argc, char** argv) {
   int matrixWidth;
   int world_rank;
   int world_size;
-  int maxRow;
-  int maxCol;
   int sum =0;
   int temp = 0;
-  int currentDestProcess = 0;
+  int sizeOfSubMatrix;
   vector<int> subMatrix;
   string line;
 
@@ -127,8 +125,10 @@ int main(int argc, char** argv) {
     fprintf(stderr, "Usage: avg num_elements_per_proc\n");
     exit(1);
   }
+  
+  
+  sizeOfSubMatrix = atoi(argv[1]);
 
-  int sizeOfSubMatrix = atoi(argv[1]);
   MPI_Init(NULL, NULL); // initiates the communicator
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); // reports the rank, identifying the calling process
   MPI_Comm_size(MPI_COMM_WORLD, &world_size); // reports the number of processes
@@ -138,27 +138,40 @@ int main(int argc, char** argv) {
   // of processes
   vector<vector <int> > matrix;
   if (world_rank == 0) { // if the root process
+    int maxRow;
+    int maxCol;
+    int currentDestProcess = 0;
+
     inputFile.open("./data.txt");      
     //gets the size of the matrix
     getline(inputFile, line);
     sscanf(line.c_str(), "%d", &matrixWidth);
+    if (matrixWidth < sizeOfSubMatrix || sizeOfSubMatrix <= 0){
+      cout << "\nIncorrect matrix size.\n";
+      cout << "Please smaller submatrix of size: " << matrixWidth << " to 1.\n" << endl;
+      exit(1);
+    }
     create_matrix(matrix,matrixWidth, inputFile);
     cout << endl <<"The matrix read in is: " << endl;
     displayMatrix(matrix,matrixWidth);
     cout << endl;
 
-    for(int row = 0; row < matrixWidth; row += sizeOfSubMatrix){
-      for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
+    for(int row = 0; row <= matrixWidth-sizeOfSubMatrix; row++){
+      for(int col = 0; col <= matrixWidth-sizeOfSubMatrix; col++ ){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
-        displaySubMatrix( matrix, row, col, sizeOfSubMatrix);
         ++currentDestProcess;
         if(currentDestProcess == world_size){
           currentDestProcess = 1;
         }
-        MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes
-        MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
-        
-        MPI_Recv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        if(world_size > 1){
+          MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes
+          MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
+          
+          MPI_Recv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        }
+        else{
+          temp = find_sum_submatrix(subMatrix, subMatrix.size());
+        }
         if (temp > sum){
           sum = temp;
           maxRow = row;
@@ -183,7 +196,6 @@ int main(int argc, char** argv) {
       if (!finished){
         MPI_Probe(0,0,MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_INT, &subMatrixWidth);
-        cout << subMatrixWidth;
         subMatrix.resize(subMatrixWidth*subMatrixWidth);
         MPI_Recv(&subMatrix[0], subMatrix.size(), MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
         temp = find_sum_submatrix(subMatrix, subMatrix.size());

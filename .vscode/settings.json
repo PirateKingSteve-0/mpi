@@ -13,6 +13,7 @@
         "iosfwd": "cpp",
         "ostream": "cpp",
         "vector": "cpp",
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "__locale": "cpp"
     }
 }
