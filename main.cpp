@@ -164,9 +164,8 @@ int main(int argc, char** argv) {
           currentDestProcess = 1;
         }
         if(world_size > 1){
-          MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes
+          MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes          
           MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
-          
           MPI_Recv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
         }
         else{
@@ -183,6 +182,7 @@ int main(int argc, char** argv) {
     for(int process = 1; process < world_size; process++){
       MPI_Send(&finished, 1, MPI_C_BOOL,process, 1, MPI_COMM_WORLD);
     }
+
     cout << "The max sum of a submatrix of size: " << sizeOfSubMatrix << 'x' << sizeOfSubMatrix << " has a value of: " << sum << endl;
     cout << "It starts at row " << maxRow+1 << " and column " << maxCol+1 << endl << endl;
     cout << "The submatrix reads: " << endl;
