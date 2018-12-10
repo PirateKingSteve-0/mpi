@@ -12,6 +12,7 @@
         "locale": "cpp",
         "iosfwd": "cpp",
         "ostream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "iostream": "cpp"
     }
 }

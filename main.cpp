@@ -58,28 +58,24 @@ void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
 
     Funciton displays the submatrix as the solution to the problem. 
 */
-void displaySubMatrix(vector<int> subMatrix, int matrixWidth){
-  int matrixSize= matrixWidth+matrixWidth;
-  cout << "Submatrix: " << endl;
-  for(int number = 0; number < matrixSize; number++){
-    // if the matrixSize is equal to the number for loop counter number+number
-    if(number+number == matrixSize){
-        cout<<endl;
+void displaySubMatrix(vector<vector <int> > subMatrix, int rowStart, int colStart, int matrixWidth){
+  int endCol = colStart+matrixWidth;
+  int endRow = rowStart+matrixWidth;
+  
+  for (int row = rowStart; row < endRow; row++){
+    for(int col = colStart; col < endCol; col++){
+      cout << subMatrix[row][col] <<  ' ';
     }
-    cout << subMatrix[number] << " "; // display space  between elements
+    cout << endl;
   }
 }
 
 // Computes the average of an array of numbers
 int computeSum(int array[], int num_elements) {
   int sum = 0;
-  cout << "num_elements: " << num_elements << endl;
-  cout << "numbers in array: ";
   for (int index = 0; index < num_elements; index++) {
     sum += array[index];
   }
-  cout<< endl; 
-  cout << "sum: " << sum << endl;
   return sum ;
 }
 
@@ -100,13 +96,17 @@ vector <int>getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCo
     for(int col = startCol; col < endCol; col++){
       subMatrix.push_back(matrix[row][col]);
     }
-    cout << endl;
   }
-  //displaySubMatrix(subMatrix, subMatrixSize);
   return subMatrix;
 }
 
-
+int find_sum_submatrix(vector<int> subMatrix, int subMatrixSize){
+  int sum = 0;
+  for(int index = 0; index < subMatrixSize; index++){
+    sum += subMatrix[index];
+  }
+  return sum;
+}
 
 int main(int argc, char** argv) {
   bool finished = false;
@@ -114,6 +114,10 @@ int main(int argc, char** argv) {
   int matrixWidth;
   int world_rank;
   int world_size;
+  int maxRow;
+  int maxCol;
+  int sum =0;
+  int temp = 0;
   int currentDestProcess = 0;
   vector<int> subMatrix;
   string line;
@@ -139,37 +143,46 @@ int main(int argc, char** argv) {
     getline(inputFile, line);
     sscanf(line.c_str(), "%d", &matrixWidth);
     create_matrix(matrix,matrixWidth, inputFile);
+    cout << endl <<"The matrix read in is: " << endl;
     displayMatrix(matrix,matrixWidth);
-
     cout << endl;
-    cout << "Sub Matrix list: "<< endl; 
+
     for(int row = 0; row < matrixWidth; row += sizeOfSubMatrix){
       for(int col = 0; col < matrixWidth; col += sizeOfSubMatrix){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
-        //displaySubMatrix(subMatrix, sizeOfSubMatrix);
         ++currentDestProcess;
         if(currentDestProcess == world_size){
           currentDestProcess = 1;
         }
         MPI_Send(&subMatrix[0], 4, MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes
         MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
+        
+        MPI_Recv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        if (temp > sum){
+          sum = temp;
+          maxRow = row;
+          maxCol = col;
+        }
       }
-      cout << endl;
     } // end of for loop
     finished = true;
     for(int process = 1; process < world_size; process++){
       MPI_Send(&finished, 1, MPI_C_BOOL,process, 1, MPI_COMM_WORLD);
     }
-    
+    cout << "The max sum of a submatrix of size: " << sizeOfSubMatrix << 'x' << sizeOfSubMatrix << " has a value of: " << sum << endl;
+    cout << "It starts at row " << maxRow+1 << " and column " << maxCol+1 << endl << endl;
+    cout << "The submatrix reads: " << endl;
+    displaySubMatrix( matrix, maxRow, maxCol, sizeOfSubMatrix);
+    cout << endl;
   }else{ 
     subMatrix.resize(4);
     while(!finished){
       MPI_Recv(&finished, 1, MPI_C_BOOL, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       if (!finished){
         MPI_Recv(&subMatrix[0], 4, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        temp = find_sum_submatrix(subMatrix, subMatrix.size());
+        MPI_Send(&temp, 1, MPI_INT,0,2, MPI_COMM_WORLD);
       }
-      displaySubMatrix(subMatrix,sizeOfSubMatrix);
-      cout << endl;
     }
   }
 
