@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
   int world_rank;
   int world_size;
   int sum =0;
-  int temp = 0;
+  vector<int> temp;
   int sizeOfSubMatrix;
   vector<int> subMatrix;
   string line;
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
     int maxCol;
     int currentDestProcess = 0;
     MPI_Request request;
-
+    
     inputFile.open("./data.txt");      
     //gets the size of the matrix
     getline(inputFile, line);
@@ -157,8 +157,8 @@ int main(int argc, char** argv) {
     displayMatrix(matrix,matrixWidth);
     cout << endl;
 
-    for(int row = 0; row <= matrixWidth-sizeOfSubMatrix; row++){
-      for(int col = 0; col <= matrixWidth-sizeOfSubMatrix; col++ ){
+    for(int row = 0; row <= (matrixWidth-sizeOfSubMatrix); row++){
+      for(int col = 0; col <= (matrixWidth-sizeOfSubMatrix); col++ ){
         subMatrix = getSubMatrix(matrix,row,col,sizeOfSubMatrix);
         ++currentDestProcess;
         if(currentDestProcess == world_size){
@@ -167,15 +167,28 @@ int main(int argc, char** argv) {
         if(world_size > 1){
           MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes          
           MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
-          MPI_Irecv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,&request);
+          temp.clear();
+          temp.push_back(row);
+          temp.push_back(col);
+          temp.push_back(0);
+          MPI_Send(&temp[0], 3, MPI_INT,currentDestProcess, 3, MPI_COMM_WORLD);
+          MPI_Irecv(&temp[0], 3, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,&request);
+          MPI_WAIT
+          /// temp = [row,col,0]
+          /// temp = [row,col,sum]
+
       }
         else{
-          temp = find_sum_submatrix(subMatrix, subMatrix.size());
+          temp.clear();
+          temp.push_back(row);
+          temp.push_back(col);
+          temp.push_back(0);
+          temp[2] = find_sum_submatrix(subMatrix, subMatrix.size());
         }
-        if (temp > sum){
-          sum = temp;
-          maxRow = row;
-          maxCol = col;
+        if (temp[2] > sum){
+          sum = temp[2];
+          maxRow = temp[0];
+          maxCol = temp[1];
         }
       }
     } // end of for loop
@@ -199,9 +212,11 @@ int main(int argc, char** argv) {
         MPI_Probe(0,0,MPI_COMM_WORLD, &status);
         MPI_Get_count(&status, MPI_INT, &subMatrixWidth);
         subMatrix.resize(subMatrixWidth*subMatrixWidth);
-        MPI_Recv(&subMatrix[0], subMatrix.size(), MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-        temp = find_sum_submatrix(subMatrix, subMatrix.size());
-        MPI_Send(&temp, 1, MPI_INT,0,2, MPI_COMM_WORLD);
+        MPI_Recv(&subMatrix[0], subMatrixWidth*subMatrixWidth, MPI_INT, 0, 0, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        temp.resize(3);
+        MPI_Recv(&temp[0], 3, MPI_INT, 0, 3, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
+        temp[2] = find_sum_submatrix(subMatrix, subMatrix.size());
+        MPI_Send(&temp[0], 3, MPI_INT,0,2, MPI_COMM_WORLD);
       }
     }
   }
