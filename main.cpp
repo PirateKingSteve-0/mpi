@@ -141,6 +141,7 @@ int main(int argc, char** argv) {
     int maxRow;
     int maxCol;
     int currentDestProcess = 0;
+    MPI_Request request;
 
     inputFile.open("./data.txt");      
     //gets the size of the matrix
@@ -166,8 +167,8 @@ int main(int argc, char** argv) {
         if(world_size > 1){
           MPI_Send(&subMatrix[0], subMatrix.size(), MPI_INT,currentDestProcess,0, MPI_COMM_WORLD); // send the submatrix to the other processes          
           MPI_Send(&finished, 1, MPI_C_BOOL,currentDestProcess, 1, MPI_COMM_WORLD);
-          MPI_Recv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,MPI_STATUS_IGNORE);
-        }
+          MPI_Irecv(&temp , 1, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,&request);
+      }
         else{
           temp = find_sum_submatrix(subMatrix, subMatrix.size());
         }
@@ -188,7 +189,8 @@ int main(int argc, char** argv) {
     cout << "The submatrix reads: " << endl;
     displaySubMatrix( matrix, maxRow, maxCol, sizeOfSubMatrix);
     cout << endl;
-  }else{ 
+  } 
+  else{ 
     MPI_Status status;
     int subMatrixWidth;
     while(!finished){
