@@ -12,18 +12,20 @@ using namespace std;
     matrix: multidimensional matrix the problem is working on
     matrixWidth: the width of the matrix
     inputFile: file that contains the matrix values to read in
-
     return: void
 */
 void create_matrix(vector<vector<int> > &matrix,int matrixWidth,ifstream &inputFile) {
   int num;
-
+  //cycles through line by line adding to the global matrix
   for (int row =0; row < matrixWidth; row++){
       vector<int> singleRow;
-      matrix.push_back(singleRow);  // creates multidimensional matrix, push another vector into the matrix for each row
-      for(int column = 0; column < matrixWidth; column++){ // for each column read from the input file a number
+      // creates multidimensional matrix, push another vector into the matrix for each row
+      matrix.push_back(singleRow);  
+      for(int column = 0; column < matrixWidth; column++){ 
+        // for each column read from the input file a number
         inputFile >> num;
-        matrix[row].push_back(num);  // push numbers onto the row vector 
+        // push numbers onto the row vector 
+        matrix[row].push_back(num);  
       }
   }
 }
@@ -32,9 +34,7 @@ void create_matrix(vector<vector<int> > &matrix,int matrixWidth,ifstream &inputF
   displayMatrix
     matrix: multi dimensional matrix passed in to be printed or displayed
     matrixWidth: pass matrix width
-
     return: void
-
     Function displays the matrix of the problem of size matrixWidth.
 */
 void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
@@ -53,9 +53,7 @@ void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
                a 2x2 matrix that with all its elements holds the highest
                sum of numbers.
     matrixWidth: pass matrix width
-
     return: void
-
     Funciton displays the submatrix as the solution to the problem. 
 */
 void displaySubMatrix(vector<vector <int> > subMatrix, int rowStart, int colStart, int matrixWidth){
@@ -142,8 +140,9 @@ int main(int argc, char** argv) {
     int maxCol;
     int currentDestProcess = 0;
     MPI_Request request;
-    
-    inputFile.open("./data.txt");      
+    MPI_Status status;
+
+    inputFile.open("./data2.txt");      
     //gets the size of the matrix
     getline(inputFile, line);
     sscanf(line.c_str(), "%d", &matrixWidth);
@@ -173,7 +172,7 @@ int main(int argc, char** argv) {
           temp.push_back(0);
           MPI_Send(&temp[0], 3, MPI_INT,currentDestProcess, 3, MPI_COMM_WORLD);
           MPI_Irecv(&temp[0], 3, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,&request);
-          MPI_WAIT
+          //MPI_Wait(&request,&status);
           /// temp = [row,col,0]
           /// temp = [row,col,sum]
 
@@ -204,8 +203,9 @@ int main(int argc, char** argv) {
     cout << endl;
   } 
   else{ 
-    MPI_Status status;
     int subMatrixWidth;
+    MPI_Status status;
+    MPI_Request request;
     while(!finished){
       MPI_Recv(&finished, 1, MPI_C_BOOL, 0, 1, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
       if (!finished){
