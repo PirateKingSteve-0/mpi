@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
           temp.push_back(0);      // pushback a zero
           MPI_Send(&temp[0], 3, MPI_INT,currentDestProcess, 3, MPI_COMM_WORLD);             // send the temp vector
           MPI_Irecv(&temp[0], 3, MPI_INT, currentDestProcess, 2, MPI_COMM_WORLD,&request);  // recv the temp vector all at the same time
-          MPI_WAIT    // waits for the other processes to return back a recv message
+          //MPI_WAIT   
           /// temp = [row,col,0]
           /// temp = [row,col,sum]
         }else{ // world size is either 0 or 1 here
