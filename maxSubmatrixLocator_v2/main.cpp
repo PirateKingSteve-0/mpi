@@ -49,7 +49,7 @@ void displayMatrix(vector<vector<int> > matrix, int matrixWidth){
 /*
   displaySubMatrix
     subMatrix: matrix that is the solution to the problem. Represents
-               a 2x2 matrix that with all its elements holds the highest
+               a nxn matrix that with all its elements holds the highest
                sum of numbers.
     matrixWidth: pass matrix width
     return: void
@@ -67,13 +67,20 @@ void displaySubMatrix(vector<vector <int> > subMatrix, int rowStart, int colStar
   }
 }
 
-// Computes the average of an array of numbers
+/*
+  computeSum
+    array[]: pass in array that holds the elements of the submatrix waiting to be summed
+    num_elements: number of elements that are in the array
+
+    return: int
+*/
 int computeSum(int array[], int num_elements) {
   int sum = 0;
+  // FOR - sums up the elements of the array, the submatrix of the problem
   for (int index = 0; index < num_elements; index++) {
     sum += array[index];
   }
-  return sum ;
+  return sum;
 }
 
 /*
@@ -82,12 +89,15 @@ int computeSum(int array[], int num_elements) {
     startRow: the row where the submatrix is received.
     startCol: the column where the submatrix is received.
     subMatrixSize: the size of the submatrix  
+
+    return: vector submatrix
 */
 vector <int>getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCol ,int subMatrixSize){
   vector <int> subMatrix;
   int endCol = startCol+subMatrixSize;
   int endRow = startRow+subMatrixSize;
   
+  // FOR - each row and column create the sub matrix
   for (int row = startRow; row < endRow; row++){
     for(int col = startCol; col < endCol; col++){
       subMatrix.push_back(matrix[row][col]);
@@ -96,6 +106,15 @@ vector <int>getSubMatrix(vector<vector <int> > &matrix, int startRow,int startCo
   return subMatrix;
 }
 
+/*
+  find_sum_submatrix
+    subMatrix: matrix that is the solution to the problem. Represents
+               a nxn matrix that with all its elements holds the highest
+               sum of numbers.
+    matrixWidth: pass matrix width
+    return: int
+    Funciton sums all the values of the submatrix
+*/
 int find_sum_submatrix(vector<int> subMatrix, int subMatrixSize){
   int sum = 0;
   for(int index = 0; index < subMatrixSize; index++){
@@ -107,18 +126,18 @@ int find_sum_submatrix(vector<int> subMatrix, int subMatrixSize){
 int main(int argc, char** argv) {
   int         world_rank;
   int         world_size;
-  ifstream    inputFile;
+  ifstream    inputFile;                 // input stream for file of nxm matrix for the problem
   string      line;
-  int         matrixWidth;
-  int         sizeOfSubMatrix;
-  int         minimumProcessAllowed =0; 
-  vector<vector <int> > matrix;
-  vector<int> subMatrix;
-  int*        subDetails = NULL;
-  int*        allSubDetails = NULL;
-  int sum     = 0;
+  int         matrixWidth;               // width of the matrix
+  int         sizeOfSubMatrix;           // size of the sub matrix
+  int         minimumProcessAllowed = 0; // there must be a floor that num of precessors cannot pass
+  vector<vector <int> > matrix;          // the matrix to be worked on
+  vector<int> subMatrix;                 // subMatrix that needs to be the solution 
+  int*        subDetails = NULL;         // integer pointer
+  int*        allSubDetails = NULL;      
+  int sum     = 0;                       // sum that represents the sum of the submatrix
   
-  sizeOfSubMatrix = 2;
+  sizeOfSubMatrix = 2;            
 
   MPI_Init(NULL, NULL); // initiates the communicator
   MPI_Comm_rank(MPI_COMM_WORLD, &world_rank); // reports the rank, identifying the calling process
@@ -198,32 +217,32 @@ int main(int argc, char** argv) {
 MPI_Gather(subDetails, 3, MPI_INT, allSubDetails, 3 , MPI_INT, 0, MPI_COMM_WORLD);
 MPI_Barrier(MPI_COMM_WORLD); 
 
+// IF - only when the world size is zero 
 if(world_rank == 0){
   int row, col;
   sum = 0;
   for(int index = 0; index < (world_size*3); index++){
     if((index+1)%3==0){
+      // Save all the submatrix details 
       if ( sum < allSubDetails[index] ){
-        sum = allSubDetails[index];
-        row = allSubDetails[index-2];
-        col = allSubDetails[index-1];
+        sum = allSubDetails[index];   // every third position is the sum and saved into sum variable
+        row = allSubDetails[index-2]; // every first postion is the row number
+        col = allSubDetails[index-1]; // every second number is the column number s
       }
     }
   }
 
   cout << "The max is: " << sum << endl;
   cout << "The submatrix: " << endl;
-  for(int rw = row; rw < row+2; rw++)
-  {
-    for(int cl = col; cl < col+2; cl++)
-    {
+  for(int rw = row; rw < row+2; rw++){
+    for(int cl = col; cl < col+2; cl++){
        cout << matrix[rw][cl] << ' ';
     }
     cout << endl;
   }
-  delete allSubDetails;
+  delete allSubDetails; // delete pointer
 }
 
-  delete subDetails;
+  delete subDetails; // delete pointer
   MPI_Finalize(); //stop participating in any communicator
 }
