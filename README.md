@@ -4,8 +4,15 @@ This repo is for learning purposes only. It is meant to better understand MPI, m
 ## TO RUN: 
 Initiate docker instance: ```docker run --rm -it -v $(pwd):/project nlknguyen/alpine-mpich``` <br>
 To build: ```mpic++ main.cpp -o main``` <br>
+
+
+### to run v1
 To run: ```mpiexec -np 2 ./main 3``` <br> (mpiexec -np <# of process> ./main < size of submatrix>) <br>
 
+### to run v2 
+To run: ```mpiexec -np 10 ./main``` <br> (mpiexec -np <10 is the minimum required on a the tested submatrix> ./main < size of submatrix>) <br>
+
+For v2 if you want to test a matrix of mxm the required number of processes is (m-1)(m-1)+1.
 
 ### Topic
 Given a very large (n>10) matrix of n x n elements, write a distributed program in MPI that outputs a submatrix of size nxn with the largest sum of its elements and its relative position or displacement (row-column of the top left element) in the original matrix. There will be only one process with rank 0, that will read the file name with the input data, read from the file the value of n, read from the file the entire matrix, and will output the submatrix of size 2x2 with the largest sum of its elements and its position on the screen. All the other processes will receive portions of the matrix and contribute to identifying the submatrix.
@@ -17,7 +24,7 @@ How can we parallize this?
 
 
 ## maxSubmatrixLocator
-
+runs more in a linear fashion due to blocking calls. 
 
 ### Known Errors and output
 
@@ -68,7 +75,7 @@ The submatrix reads:
 
 
 ## maxSubmatrixLocator_v2
-
+an attempt at parallelizing with gather to avoid linearity.
 
 
 
