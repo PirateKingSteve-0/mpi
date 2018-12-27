@@ -245,4 +245,3 @@ if(world_rank == 0){
 
   delete subDetails; // delete pointer
   MPI_Finalize(); //stop participating in any communicator
-}
